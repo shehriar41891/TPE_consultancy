@@ -31,7 +31,13 @@ export async function setupVite(server: Server, app: Express) {
 
   app.use(vite.middlewares);
 
-  app.use("/{*path}", async (req, res, next) => {
+  // Catch-all route for SPA - Express 5 compatible
+  app.use(async (req, res, next) => {
+    // Skip if this is a static asset request (handled by vite.middlewares)
+    if (req.path.startsWith("/src/") || req.path.startsWith("/node_modules/") || req.path.includes(".")) {
+      return next();
+    }
+
     const url = req.originalUrl;
 
     try {
