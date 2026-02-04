@@ -1,24 +1,16 @@
-import { pgTable, text, serial, timestamp, boolean } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const inquiries = pgTable("inquiries", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  subject: text("subject").notNull(),
-  message: text("message").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertInquirySchema = createInsertSchema(inquiries).omit({ 
-  id: true, 
-  createdAt: true 
-}).extend({
+export const insertInquirySchema = z.object({
+  name: z.string().min(1),
   email: z.string().email(),
-  message: z.string().min(10)
+  phone: z.string().optional(),
+  subject: z.string().min(1),
+  message: z.string().min(10),
 });
 
-export type Inquiry = typeof inquiries.$inferSelect;
 export type InsertInquiry = z.infer<typeof insertInquirySchema>;
+
+export type Inquiry = InsertInquiry & {
+  id: number;
+  createdAt: Date;
+};
